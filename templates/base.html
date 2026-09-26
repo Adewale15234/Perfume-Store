@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}Perfume Store{% endblock %}
+    </title>
+
+    <meta
+        name="description"
+        content="Discover beautiful perfumes at affordable prices."
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #f8f6f2;
+            color: #222;
+            line-height: 1.6;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        button,
+        input,
+        select,
+        textarea {
+            font: inherit;
+        }
+
+        /* =========================================
+           HEADER
+        ========================================= */
+
+        .site-header {
+            background: #111;
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: auto;
+            min-height: 70px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 20px;
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            color: #d4af37;
+            letter-spacing: 1px;
+        }
+
+        .brand span {
+            color: #fff;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #fff;
+            font-size: 15px;
+            transition: 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #d4af37;
+        }
+
+        .cart-link {
+            position: relative;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -12px;
+            right: -15px;
+
+            min-width: 20px;
+            height: 20px;
+
+            padding: 2px 5px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: #d4af37;
+            color: #111;
+
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .mobile-menu-button {
+            display: none;
+
+            background: transparent;
+            border: none;
+            color: #fff;
+
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        /* =========================================
+           MAIN
+        ========================================= */
+
+        main {
+            min-height: calc(100vh - 150px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        /* =========================================
+           FLASH MESSAGES
+        ========================================= */
+
+        .flash-container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 15px 20px 0;
+        }
+
+        .flash {
+            padding: 13px 18px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .flash-success {
+            background: #dff5e5;
+            color: #176b35;
+            border: 1px solid #b8e6c5;
+        }
+
+        .flash-danger {
+            background: #fde2e2;
+            color: #9b1c1c;
+            border: 1px solid #f5bcbc;
+        }
+
+        .flash-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffe69c;
+        }
+
+        .flash-info {
+            background: #dff1ff;
+            color: #145b8c;
+            border: 1px solid #b9e2ff;
+        }
+
+        /* =========================================
+           BUTTONS
+        ========================================= */
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border: none;
+            border-radius: 7px;
+
+            padding: 11px 18px;
+
+            cursor: pointer;
+
+            font-weight: 700;
+            font-size: 14px;
+
+            transition: 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: #111;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #292929;
+        }
+
+        .btn-gold {
+            background: #d4af37;
+            color: #111;
+        }
+
+        .btn-gold:hover {
+            background: #bd9825;
+        }
+
+        .btn-danger {
+            background: #c62828;
+            color: #fff;
+        }
+
+        .btn-success {
+            background: #198754;
+            color: #fff;
+        }
+
+        .btn-light {
+            background: #eee;
+            color: #222;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* =========================================
+           PAGE HEADER
+        ========================================= */
+
+        .page-header {
+            background: #111;
+            color: #fff;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            color: #d4af37;
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #ddd;
+        }
+
+        /* =========================================
+           FORMS
+        ========================================= */
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+
+            border: 1px solid #ccc;
+            border-radius: 7px;
+
+            padding: 12px 13px;
+
+            background: #fff;
+            color: #222;
+
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+
+        .site-footer {
+            background: #111;
+            color: #ccc;
+            margin-top: 50px;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: auto;
+
+            padding: 40px 20px;
+
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 30px;
+        }
+
+        .footer-column h3 {
+            color: #d4af37;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .footer-column p,
+        .footer-column a {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .footer-column a:hover {
+            color: #d4af37;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            text-align: center;
+            padding: 15px 20px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* =========================================
+           EMPTY STATE
+        ========================================= */
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+
+        .empty-state h2 {
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: #777;
+            margin-bottom: 20px;
+        }
+
+        /* =========================================
+           ERROR PAGE
+        ========================================= */
+
+        .error-page {
+            max-width: 700px;
+            margin: 70px auto;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .error-page h1 {
+            font-size: 60px;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .error-page p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
+
+        @media (max-width: 768px) {
+
+            .navbar {
+                min-height: 62px;
+            }
+
+            .brand {
+                font-size: 20px;
+            }
+
+            .mobile-menu-button {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+
+                position: absolute;
+
+                left: 0;
+                right: 0;
+                top: 62px;
+
+                background: #111;
+
+                padding: 20px;
+
+                flex-direction: column;
+                align-items: flex-start;
+
+                gap: 18px;
+
+                border-top: 1px solid #333;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 25px 15px;
+            }
+        }
+    </style>
+
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <header class="site-header">
+
+        <nav class="navbar">
+
+            <a
+                href="{{ url_for('index') }}"
+                class="brand"
+            >
+                PERFUME<span> STORE</span>
+            </a>
+
+            <button
+                class="mobile-menu-button"
+                onclick="toggleMenu()"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+
+            <ul
+                class="nav-links"
+                id="navLinks"
+            >
+
+                <li>
+                    <a href="{{ url_for('index') }}">
+                        Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('shop') }}">
+                        Shop
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="{{ url_for('cart') }}"
+                        class="cart-link"
+                    >
+                        Cart
+
+                        {% if cart_count > 0 %}
+                            <span class="cart-badge">
+                                {{ cart_count }}
+                            </span>
+                        {% endif %}
+                    </a>
+                </li>
+
+                <li>
+                    <a
+                        href="{{ url_for('admin_login') }}"
+                    >
+                        Admin
+                    </a>
+                </li>
+
+            </ul>
+
+        </nav>
+
+    </header>
+
+
+    <!-- =========================================
+         FLASH MESSAGES
+    ========================================== -->
+
+    {% with messages = get_flashed_messages(
+        with_categories=true
+    ) %}
+
+        {% if messages %}
+
+            <div class="flash-container">
+
+                {% for category, message in messages %}
+
+                    <div
+                        class="flash flash-{{ category }}"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main>
+
+        {% if error_message %}
+
+            <div class="error-page">
+
+                <h1>Oops!</h1>
+
+                <p>
+                    {{ error_message }}
+                </p>
+
+                <a
+                    href="{{ url_for('index') }}"
+                    class="btn btn-gold"
+                >
+                    Back Home
+                </a>
+
+            </div>
+
+        {% else %}
+
+            {% block content %}
+            {% endblock %}
+
+        {% endif %}
+
+    </main>
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+    <footer class="site-footer">
+
+        <div class="footer-inner">
+
+            <div class="footer-column">
+
+                <h3>Perfume Store</h3>
+
+                <p>
+                    Discover beautiful fragrances
+                    for every occasion.
+                </p>
+
+            </div>
+
+            <div class="footer-column">
+
+                <h3>Quick Links</h3>
+
+                <p>
+                    <a href="{{ url_for('index') }}">
+                        Home
+                    </a>
+                </p>
+
+                <p>
+                    <a href="{{ url_for('shop') }}">
+                        Shop
+                    </a>
+                </p>
+
+                <p>
+                    <a href="{{ url_for('cart') }}">
+                        Cart
+                    </a>
+                </p>
+
+            </div>
+
+            <div class="footer-column">
+
+                <h3>Contact</h3>
+
+                <p>
+                    Need help with your order?
+                </p>
+
+                <p>
+                    Contact us for assistance.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+
+            &copy;
+            {{ current_year }}
+            Perfume Store.
+            All rights reserved.
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script>
+
+        function toggleMenu() {
+
+            const nav =
+                document.getElementById(
+                    "navLinks"
+                );
+
+            nav.classList.toggle(
+                "active"
+            );
+        }
+
+    </script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

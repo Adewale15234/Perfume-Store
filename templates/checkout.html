@@ -1,0 +1,787 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .checkout-page {
+        padding: 45px 0 70px;
+    }
+
+    .checkout-header {
+        margin-bottom: 30px;
+    }
+
+    .checkout-header h1 {
+        font-size: 38px;
+        color: #111;
+        margin-bottom: 8px;
+    }
+
+    .checkout-header p {
+        color: #777;
+        margin: 0;
+    }
+
+    .checkout-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .checkout-card,
+    .order-summary {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 25px;
+    }
+
+    .checkout-card h2,
+    .order-summary h2 {
+        color: #111;
+        font-size: 22px;
+        margin-bottom: 25px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        display: block;
+        color: #333;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 7px;
+    }
+
+    .required {
+        color: #d32f2f;
+    }
+
+    .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 13px 14px;
+        border: 1px solid #dcdcdc;
+        border-radius: 7px;
+        background: #fff;
+        color: #222;
+        font-size: 14px;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #c9a227;
+        box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.08);
+    }
+
+    textarea.form-control {
+        min-height: 105px;
+        resize: vertical;
+    }
+
+    select.form-control {
+        cursor: pointer;
+    }
+
+    .payment-options {
+        margin-top: 8px;
+    }
+
+    .payment-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-bottom: 10px;
+        transition: 0.2s ease;
+    }
+
+    .payment-option:hover {
+        border-color: #c9a227;
+        background: #fffdf5;
+    }
+
+    .payment-option input {
+        margin-top: 3px;
+        accent-color: #111;
+    }
+
+    .payment-option-content strong {
+        display: block;
+        color: #222;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .payment-option-content span {
+        color: #888;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .delivery-note {
+        background: #faf8ef;
+        border: 1px solid #eee3b9;
+        border-radius: 8px;
+        padding: 14px;
+        color: #6d5b1b;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 5px;
+        margin-bottom: 25px;
+    }
+
+    .place-order-button {
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        background: #111;
+        color: #fff;
+        padding: 15px 20px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .place-order-button:hover {
+        background: #c9a227;
+        color: #111;
+    }
+
+    .back-cart {
+        display: inline-block;
+        margin-top: 15px;
+        color: #555;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .back-cart:hover {
+        color: #c9a227;
+    }
+
+    .order-summary {
+        position: sticky;
+        top: 100px;
+    }
+
+    .summary-item {
+        display: flex;
+        gap: 12px;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .summary-item:first-of-type {
+        padding-top: 0;
+    }
+
+    .summary-image {
+        width: 65px;
+        height: 70px;
+        flex-shrink: 0;
+        border-radius: 7px;
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .summary-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .summary-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .summary-item-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .summary-item-name {
+        color: #222;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.35;
+        margin-bottom: 5px;
+    }
+
+    .summary-item-quantity {
+        color: #888;
+        font-size: 12px;
+    }
+
+    .summary-item-price {
+        color: #222;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .summary-totals {
+        margin-top: 18px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 9px 0;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .summary-row.total {
+        border-top: 1px solid #ddd;
+        margin-top: 10px;
+        padding-top: 18px;
+        color: #111;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .summary-delivery {
+        font-size: 12px;
+        color: #888;
+        text-align: right;
+        max-width: 170px;
+        line-height: 1.4;
+    }
+
+    .secure-note {
+        margin-top: 20px;
+        padding: 13px;
+        background: #f7f7f7;
+        border-radius: 7px;
+        text-align: center;
+        color: #777;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .empty-checkout {
+        max-width: 600px;
+        margin: 40px auto 70px;
+        text-align: center;
+        padding: 60px 25px;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .empty-checkout h2 {
+        color: #111;
+        margin-bottom: 10px;
+    }
+
+    .empty-checkout p {
+        color: #777;
+        margin-bottom: 25px;
+    }
+
+    .shop-button {
+        display: inline-block;
+        padding: 13px 24px;
+        background: #111;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 7px;
+        font-weight: 600;
+    }
+
+    .shop-button:hover {
+        background: #c9a227;
+        color: #111;
+    }
+
+    @media (max-width: 900px) {
+        .checkout-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .order-summary {
+            position: static;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .checkout-page {
+            padding: 30px 0 50px;
+        }
+
+        .checkout-header h1 {
+            font-size: 31px;
+        }
+
+        .checkout-card,
+        .order-summary {
+            padding: 20px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="checkout-page">
+
+    <div class="checkout-header">
+        <h1>Checkout</h1>
+        <p>
+            Enter your delivery details and review your order before placing it.
+        </p>
+    </div>
+
+    {% if items %}
+
+        <div class="checkout-layout">
+
+            <!-- CUSTOMER INFORMATION -->
+            <div class="checkout-card">
+
+                <h2>
+                    Delivery Information
+                </h2>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('checkout') }}"
+                >
+
+                    <div class="form-row">
+
+                        <!-- NAME -->
+                        <div class="form-group">
+
+                            <label for="customer_name">
+                                Full Name <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="customer_name"
+                                name="customer_name"
+                                class="form-control"
+                                placeholder="Enter your full name"
+                                value="{{ request.form.get('customer_name', '') }}"
+                                required
+                            >
+
+                        </div>
+
+                        <!-- PHONE -->
+                        <div class="form-group">
+
+                            <label for="phone">
+                                Phone Number <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                class="form-control"
+                                placeholder="08012345678"
+                                value="{{ request.form.get('phone', '') }}"
+                                required
+                            >
+
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="form-group">
+
+                            <label for="email">
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-control"
+                                placeholder="example@email.com"
+                                value="{{ request.form.get('email', '') }}"
+                            >
+
+                        </div>
+
+                        <!-- CITY -->
+                        <div class="form-group">
+
+                            <label for="city">
+                                City / Town <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="city"
+                                name="city"
+                                class="form-control"
+                                placeholder="Enter your city or town"
+                                value="{{ request.form.get('city', '') }}"
+                                required
+                            >
+
+                        </div>
+
+                        <!-- STATE -->
+                        <div class="form-group">
+
+                            <label for="state">
+                                State <span class="required">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="state"
+                                name="state"
+                                class="form-control"
+                                placeholder="Enter your state"
+                                value="{{ request.form.get('state', '') }}"
+                                required
+                            >
+
+                        </div>
+
+                        <!-- DELIVERY FEE -->
+                        <div class="form-group">
+
+                            <label for="delivery_fee">
+                                Delivery Fee (₦)
+                            </label>
+
+                            <input
+                                type="number"
+                                id="delivery_fee"
+                                name="delivery_fee"
+                                class="form-control"
+                                placeholder="0"
+                                value="{{ request.form.get('delivery_fee', '0') }}"
+                                min="0"
+                                step="0.01"
+                            >
+
+                        </div>
+
+                        <!-- ADDRESS -->
+                        <div class="form-group full-width">
+
+                            <label for="address">
+                                Delivery Address <span class="required">*</span>
+                            </label>
+
+                            <textarea
+                                id="address"
+                                name="address"
+                                class="form-control"
+                                placeholder="Enter your complete delivery address"
+                                required
+                            >{{ request.form.get('address', '') }}</textarea>
+
+                        </div>
+
+                    </div>
+
+                    <div class="delivery-note">
+                        <strong>Delivery information:</strong>
+                        Please provide a correct phone number and complete address
+                        so your order can be delivered without unnecessary delay.
+                    </div>
+
+                    <!-- PAYMENT -->
+                    <h2>
+                        Payment Method
+                    </h2>
+
+                    <div class="payment-options">
+
+                        <label class="payment-option">
+
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="Cash on Delivery"
+                                {% if request.form.get('payment_method', 'Cash on Delivery') == 'Cash on Delivery' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <div class="payment-option-content">
+
+                                <strong>
+                                    Cash on Delivery
+                                </strong>
+
+                                <span>
+                                    Pay when your perfume is delivered.
+                                </span>
+
+                            </div>
+
+                        </label>
+
+                        <label class="payment-option">
+
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="Bank Transfer"
+                                {% if request.form.get('payment_method') == 'Bank Transfer' %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <div class="payment-option-content">
+
+                                <strong>
+                                    Bank Transfer
+                                </strong>
+
+                                <span>
+                                    Payment instructions can be provided after your order.
+                                </span>
+
+                            </div>
+
+                        </label>
+
+                    </div>
+
+                    <!-- NOTES -->
+                    <div class="form-group" style="margin-top: 20px;">
+
+                        <label for="notes">
+                            Order Notes
+                        </label>
+
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            class="form-control"
+                            placeholder="Any special instruction for your order? (Optional)"
+                        >{{ request.form.get('notes', '') }}</textarea>
+
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="place-order-button"
+                    >
+                        Place Order
+                    </button>
+
+                </form>
+
+                <a
+                    href="{{ url_for('cart') }}"
+                    class="back-cart"
+                >
+                    ← Return to Cart
+                </a>
+
+            </div>
+
+            <!-- ORDER SUMMARY -->
+            <div class="order-summary">
+
+                <h2>
+                    Your Order
+                </h2>
+
+                {% for item in items %}
+
+                    <div class="summary-item">
+
+                        <div class="summary-image">
+
+                            {% if item.perfume.image %}
+
+                                <img
+                                    src="{{ url_for(
+                                        'static',
+                                        filename='uploads/perfumes/' + item.perfume.image
+                                    ) }}"
+                                    alt="{{ item.perfume.name }}"
+                                >
+
+                            {% else %}
+
+                                <div class="summary-placeholder">
+                                    No Image
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="summary-item-info">
+
+                            <div class="summary-item-name">
+                                {{ item.perfume.name }}
+                            </div>
+
+                            <div class="summary-item-quantity">
+                                Quantity: {{ item.quantity }}
+                            </div>
+
+                        </div>
+
+                        <div class="summary-item-price">
+                            ₦{{ "{:,.2f}".format(item.total) }}
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+                <div class="summary-totals">
+
+                    <div class="summary-row">
+
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <span>
+                            ₦{{ "{:,.2f}".format(cart_subtotal) }}
+                        </span>
+
+                    </div>
+
+                    <div class="summary-row">
+
+                        <span>
+                            Delivery
+                        </span>
+
+                        <span class="summary-delivery">
+                            Entered above
+                        </span>
+
+                    </div>
+
+                    <div class="summary-row total">
+
+                        <span>
+                            Order Total
+                        </span>
+
+                        <span id="order-total">
+                            ₦{{ "{:,.2f}".format(cart_subtotal) }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="secure-note">
+                    🔒 Your order details are handled securely.
+                    Please check your information carefully before placing the order.
+                </div>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-checkout">
+
+            <div style="font-size: 50px; margin-bottom: 15px;">
+                🛒
+            </div>
+
+            <h2>
+                Your Cart Is Empty
+            </h2>
+
+            <p>
+                Add at least one perfume to your cart before proceeding to checkout.
+            </p>
+
+            <a
+                href="{{ url_for('shop') }}"
+                class="shop-button"
+            >
+                Browse Perfumes
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const deliveryInput = document.getElementById("delivery_fee");
+    const orderTotal = document.getElementById("order-total");
+
+    if (deliveryInput && orderTotal) {
+        const subtotal = {{ cart_subtotal|float }};
+
+        function updateOrderTotal() {
+            let delivery = parseFloat(deliveryInput.value) || 0;
+
+            if (delivery < 0) {
+                delivery = 0;
+                deliveryInput.value = 0;
+            }
+
+            const total = subtotal + delivery;
+
+            orderTotal.textContent =
+                "₦" + total.toLocaleString("en-NG", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+        }
+
+        deliveryInput.addEventListener("input", updateOrderTotal);
+
+        updateOrderTotal();
+    }
+</script>
+{% endblock %}

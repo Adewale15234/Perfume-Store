@@ -1,0 +1,658 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .cart-page {
+        padding: 45px 0 70px;
+    }
+
+    .cart-header {
+        margin-bottom: 30px;
+    }
+
+    .cart-header h1 {
+        font-size: 38px;
+        color: #111;
+        margin-bottom: 8px;
+    }
+
+    .cart-header p {
+        color: #777;
+        margin: 0;
+    }
+
+    .cart-layout {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 30px;
+        align-items: start;
+    }
+
+    .cart-items {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 110px 1fr auto;
+        gap: 20px;
+        padding: 22px;
+        border-bottom: 1px solid #e8e8e8;
+        align-items: center;
+    }
+
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+
+    .cart-item-image {
+        width: 110px;
+        height: 120px;
+        border-radius: 9px;
+        overflow: hidden;
+        background: #f5f5f5;
+    }
+
+    .cart-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 12px;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .cart-item-info h3 {
+        margin: 0 0 7px;
+        font-size: 19px;
+        color: #111;
+    }
+
+    .cart-item-brand {
+        color: #999;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 7px;
+    }
+
+    .cart-item-size {
+        color: #777;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .cart-item-price {
+        color: #222;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .quantity-area {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .quantity-area label {
+        font-size: 12px;
+        color: #777;
+    }
+
+    .quantity-input {
+        width: 70px;
+        padding: 8px 9px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .quantity-input:focus {
+        border-color: #c9a227;
+    }
+
+    .cart-item-right {
+        text-align: right;
+        min-width: 130px;
+    }
+
+    .item-total {
+        font-size: 19px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 12px;
+    }
+
+    .remove-button {
+        border: none;
+        background: transparent;
+        color: #c62828;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 0;
+    }
+
+    .remove-button:hover {
+        text-decoration: underline;
+    }
+
+    .cart-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 20px 22px;
+        border-top: 1px solid #e8e8e8;
+        background: #fafafa;
+    }
+
+    .continue-shopping {
+        display: inline-block;
+        padding: 11px 18px;
+        border: 1px solid #ddd;
+        border-radius: 7px;
+        text-decoration: none;
+        color: #333;
+        background: #fff;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .continue-shopping:hover {
+        background: #111;
+        color: #fff;
+        border-color: #111;
+    }
+
+    .clear-cart-button {
+        border: none;
+        background: transparent;
+        color: #c62828;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .clear-cart-button:hover {
+        text-decoration: underline;
+    }
+
+    .summary-card {
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 24px;
+        position: sticky;
+        top: 100px;
+    }
+
+    .summary-card h2 {
+        font-size: 22px;
+        color: #111;
+        margin-bottom: 22px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        padding: 11px 0;
+        color: #555;
+        font-size: 14px;
+    }
+
+    .summary-row.total {
+        border-top: 1px solid #ddd;
+        margin-top: 10px;
+        padding-top: 18px;
+        color: #111;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .checkout-button {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 20px;
+        padding: 14px 18px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        text-decoration: none;
+        text-align: center;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .checkout-button:hover {
+        background: #c9a227;
+        color: #111;
+    }
+
+    .summary-note {
+        margin-top: 15px;
+        padding: 12px;
+        background: #f8f8f8;
+        border-radius: 7px;
+        color: #777;
+        font-size: 12px;
+        line-height: 1.6;
+        text-align: center;
+    }
+
+    .empty-cart {
+        max-width: 650px;
+        margin: 40px auto 70px;
+        padding: 70px 25px;
+        text-align: center;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .empty-icon {
+        font-size: 55px;
+        margin-bottom: 15px;
+    }
+
+    .empty-cart h2 {
+        color: #111;
+        margin-bottom: 10px;
+        font-size: 27px;
+    }
+
+    .empty-cart p {
+        color: #777;
+        margin-bottom: 25px;
+    }
+
+    .shop-button {
+        display: inline-block;
+        padding: 13px 24px;
+        background: #111;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 7px;
+        font-weight: 600;
+    }
+
+    .shop-button:hover {
+        background: #c9a227;
+        color: #111;
+    }
+
+    @media (max-width: 900px) {
+        .cart-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card {
+            position: static;
+        }
+    }
+
+    @media (max-width: 650px) {
+        .cart-page {
+            padding: 30px 0 50px;
+        }
+
+        .cart-header h1 {
+            font-size: 31px;
+        }
+
+        .cart-item {
+            grid-template-columns: 85px 1fr;
+            gap: 15px;
+            padding: 17px;
+        }
+
+        .cart-item-image {
+            width: 85px;
+            height: 100px;
+        }
+
+        .cart-item-right {
+            grid-column: 2;
+            text-align: left;
+            min-width: 0;
+        }
+
+        .item-total {
+            margin-bottom: 8px;
+        }
+
+        .cart-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .continue-shopping {
+            text-align: center;
+        }
+
+        .clear-cart-button {
+            padding: 5px;
+        }
+    }
+
+    @media (max-width: 430px) {
+        .cart-item {
+            grid-template-columns: 70px 1fr;
+            gap: 12px;
+        }
+
+        .cart-item-image {
+            width: 70px;
+            height: 85px;
+        }
+
+        .cart-item-info h3 {
+            font-size: 16px;
+        }
+
+        .quantity-area {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="cart-page">
+
+    <div class="cart-header">
+        <h1>Your Shopping Cart</h1>
+
+        {% if items %}
+            <p>
+                Review your selected perfumes before checkout.
+            </p>
+        {% else %}
+            <p>
+                Your cart is currently empty.
+            </p>
+        {% endif %}
+    </div>
+
+    {% if items %}
+
+        <div class="cart-layout">
+
+            <!-- CART ITEMS -->
+            <div class="cart-items">
+
+                {% for item in items %}
+
+                    <div class="cart-item">
+
+                        <!-- IMAGE -->
+                        <div class="cart-item-image">
+
+                            {% if item.perfume.image %}
+
+                                <img
+                                    src="{{ url_for(
+                                        'static',
+                                        filename='uploads/perfumes/' + item.perfume.image
+                                    ) }}"
+                                    alt="{{ item.perfume.name }}"
+                                >
+
+                            {% else %}
+
+                                <div class="image-placeholder">
+                                    No Image
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                        <!-- INFORMATION -->
+                        <div class="cart-item-info">
+
+                            {% if item.perfume.brand %}
+                                <div class="cart-item-brand">
+                                    {{ item.perfume.brand }}
+                                </div>
+                            {% endif %}
+
+                            <h3>
+                                {{ item.perfume.name }}
+                            </h3>
+
+                            {% if item.perfume.size %}
+                                <div class="cart-item-size">
+                                    Size: {{ item.perfume.size }}
+                                </div>
+                            {% endif %}
+
+                            <div class="cart-item-price">
+                                ₦{{ "{:,.2f}".format(item.perfume.selling_price) }}
+                                each
+                            </div>
+
+                            <div class="quantity-area">
+
+                                <label for="quantity-{{ item.perfume.id }}">
+                                    Quantity:
+                                </label>
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for('update_cart') }}"
+                                    style="display: flex; gap: 7px; align-items: center;"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="perfume_id"
+                                        value="{{ item.perfume.id }}"
+                                    >
+
+                                    <input
+                                        type="number"
+                                        id="quantity-{{ item.perfume.id }}"
+                                        name="quantity"
+                                        class="quantity-input"
+                                        value="{{ item.quantity }}"
+                                        min="1"
+                                        max="{{ item.perfume.stock }}"
+                                        required
+                                    >
+
+                                    <button
+                                        type="submit"
+                                        style="
+                                            border: none;
+                                            background: #111;
+                                            color: #fff;
+                                            padding: 8px 11px;
+                                            border-radius: 6px;
+                                            cursor: pointer;
+                                            font-size: 12px;
+                                        "
+                                    >
+                                        Update
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                        <!-- ITEM TOTAL -->
+                        <div class="cart-item-right">
+
+                            <div class="item-total">
+                                ₦{{ "{:,.2f}".format(item.total) }}
+                            </div>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for('remove_from_cart', perfume_id=item.perfume.id) }}"
+                            >
+                                <button
+                                    type="submit"
+                                    class="remove-button"
+                                >
+                                    Remove
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+                <!-- CART ACTIONS -->
+                <div class="cart-actions">
+
+                    <a
+                        href="{{ url_for('shop') }}"
+                        class="continue-shopping"
+                    >
+                        ← Continue Shopping
+                    </a>
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('clear_cart') }}"
+                    >
+                        <button
+                            type="submit"
+                            class="clear-cart-button"
+                        >
+                            Clear Cart
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+
+            <!-- SUMMARY -->
+            <div class="summary-card">
+
+                <h2>
+                    Order Summary
+                </h2>
+
+                <div class="summary-row">
+
+                    <span>
+                        Items
+                    </span>
+
+                    <span>
+                        {{ cart_count }}
+                    </span>
+
+                </div>
+
+                <div class="summary-row">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <span>
+                        ₦{{ "{:,.2f}".format(cart_subtotal) }}
+                    </span>
+
+                </div>
+
+                <div class="summary-row">
+
+                    <span>
+                        Delivery
+                    </span>
+
+                    <span>
+                        Calculated at checkout
+                    </span>
+
+                </div>
+
+                <div class="summary-row total">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <span>
+                        ₦{{ "{:,.2f}".format(cart_subtotal) }}
+                    </span>
+
+                </div>
+
+                <a
+                    href="{{ url_for('checkout') }}"
+                    class="checkout-button"
+                >
+                    Proceed to Checkout
+                </a>
+
+                <div class="summary-note">
+                    Delivery charges will be confirmed during checkout
+                    based on your delivery information.
+                </div>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <!-- EMPTY CART -->
+        <div class="empty-cart">
+
+            <div class="empty-icon">
+                🛒
+            </div>
+
+            <h2>
+                Your Cart Is Empty
+            </h2>
+
+            <p>
+                You haven't added any perfumes to your cart yet.
+                Explore our collection and find something you love.
+            </p>
+
+            <a
+                href="{{ url_for('shop') }}"
+                class="shop-button"
+            >
+                Start Shopping
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

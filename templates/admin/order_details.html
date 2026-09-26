@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }} - Admin{% endblock %}
+
+{% block content %}
+
+<style>
+    .admin-page {
+        background: #f5f6f7;
+        min-height: calc(100vh - 150px);
+        padding: 30px 0 50px;
+    }
+
+    .admin-container {
+        width: 92%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .admin-header {
+        background: #111;
+        color: #fff;
+        border-radius: 14px;
+        padding: 22px 25px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .admin-header h1 {
+        margin: 0;
+        color: #d4af37;
+        font-size: 25px;
+    }
+
+    .admin-header p {
+        margin: 6px 0 0;
+        color: #ddd;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .header-btn {
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        border: 1px solid #444;
+        color: #fff;
+        background: #222;
+    }
+
+    .header-btn:hover {
+        background: #333;
+        color: #fff;
+    }
+
+    .section-card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 25px;
+        margin-bottom: 22px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e8e8e8;
+    }
+
+    .section-title {
+        margin: 0 0 20px;
+        font-size: 19px;
+        color: #111;
+        border-bottom: 2px solid #d4af37;
+        padding-bottom: 10px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px;
+    }
+
+    .info-item {
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 9px;
+    }
+
+    .info-label {
+        display: block;
+        color: #777;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .info-value {
+        color: #222;
+        font-size: 15px;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .status-box {
+        background: #111;
+        color: #fff;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .status-box h3 {
+        margin: 0 0 15px;
+        color: #d4af37;
+        font-size: 18px;
+    }
+
+    .status-form {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .status-form select {
+        flex: 1;
+        min-width: 220px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        border: 1px solid #555;
+        background: #222;
+        color: #fff;
+        font-size: 14px;
+    }
+
+    .status-form button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #d4af37;
+        color: #111;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .status-form button:hover {
+        background: #c19b25;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #eee;
+        color: #333;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-processing {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-out {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+    .items-table th {
+        background: #111;
+        color: #d4af37;
+        text-align: left;
+        padding: 13px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .items-table td {
+        padding: 14px 13px;
+        border-bottom: 1px solid #eee;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .items-table tbody tr:hover {
+        background: #fafafa;
+    }
+
+    .item-name {
+        font-weight: 700;
+        color: #111;
+    }
+
+    .item-price {
+        white-space: nowrap;
+    }
+
+    .quantity {
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .item-total {
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .summary {
+        max-width: 430px;
+        margin-left: auto;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 11px 0;
+        border-bottom: 1px solid #eee;
+        color: #444;
+        font-size: 14px;
+    }
+
+    .summary-row.total {
+        border-bottom: none;
+        border-top: 2px solid #111;
+        margin-top: 8px;
+        padding-top: 16px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #111;
+    }
+
+    .summary-row.total span:last-child {
+        color: #b18b18;
+    }
+
+    .payment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .payment-item {
+        padding: 16px;
+        background: #f8f8f8;
+        border-radius: 9px;
+    }
+
+    .payment-item small {
+        display: block;
+        color: #777;
+        font-size: 12px;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .payment-item strong {
+        color: #222;
+        font-size: 15px;
+    }
+
+    .notes-box {
+        background: #fffdf2;
+        border-left: 4px solid #d4af37;
+        padding: 15px 18px;
+        border-radius: 7px;
+        color: #444;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    .no-notes {
+        color: #888;
+        font-style: italic;
+    }
+
+    .bottom-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .action-btn {
+        display: inline-block;
+        padding: 11px 18px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .back-btn {
+        background: #111;
+        color: #fff;
+    }
+
+    .back-btn:hover {
+        background: #333;
+        color: #fff;
+    }
+
+    .store-btn {
+        background: #d4af37;
+        color: #111;
+    }
+
+    .store-btn:hover {
+        background: #c19b25;
+        color: #111;
+    }
+
+    @media (max-width: 800px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width {
+            grid-column: auto;
+        }
+
+        .payment-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .admin-page {
+            padding: 20px 0 40px;
+        }
+
+        .admin-container {
+            width: 94%;
+        }
+
+        .section-card {
+            padding: 18px;
+        }
+
+        .admin-header {
+            padding: 18px;
+        }
+
+        .admin-header h1 {
+            font-size: 21px;
+        }
+
+        .status-form {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .status-form select,
+        .status-form button {
+            width: 100%;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-btn {
+            flex: 1;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="admin-page">
+    <div class="admin-container">
+
+        <!-- PAGE HEADER -->
+        <div class="admin-header">
+            <div>
+                <h1>Order Details</h1>
+                <p>Order #{{ order.order_number }}</p>
+            </div>
+
+            <div class="header-actions">
+                <a href="{{ url_for('admin_orders') }}" class="header-btn">
+                    ← Orders
+                </a>
+
+                <a href="{{ url_for('admin_dashboard') }}" class="header-btn">
+                    Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- ORDER STATUS -->
+        <div class="section-card">
+            <div class="status-box">
+                <h3>Update Order Status</h3>
+
+                <form
+                    method="POST"
+                    action="{{ url_for('admin_update_order_status', order_id=order.id) }}"
+                    class="status-form"
+                >
+                    <select name="status" required>
+                        {% for status in ["Pending", "Confirmed", "Processing", "Out for Delivery", "Delivered", "Cancelled"] %}
+                            <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
+                                {{ status }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit">
+                        Update Status
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- CUSTOMER INFORMATION -->
+        <div class="section-card">
+            <h2 class="section-title">Customer Information</h2>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <span class="info-label">Customer Name</span>
+                    <span class="info-value">
+                        {{ order.customer_name }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Phone Number</span>
+                    <span class="info-value">
+                        {{ order.phone }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Email Address</span>
+                    <span class="info-value">
+                        {{ order.email or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">City</span>
+                    <span class="info-value">
+                        {{ order.city or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">State</span>
+                    <span class="info-value">
+                        {{ order.state or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Current Order Status</span>
+                    <span class="info-value">
+                        {% if order.status == "Pending" %}
+                            <span class="status-badge status-pending">Pending</span>
+                        {% elif order.status == "Confirmed" %}
+                            <span class="status-badge status-confirmed">Confirmed</span>
+                        {% elif order.status == "Processing" %}
+                            <span class="status-badge status-processing">Processing</span>
+                        {% elif order.status == "Out for Delivery" %}
+                            <span class="status-badge status-out">Out for Delivery</span>
+                        {% elif order.status == "Delivered" %}
+                            <span class="status-badge status-delivered">Delivered</span>
+                        {% elif order.status == "Cancelled" %}
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                        {% else %}
+                            <span class="status-badge">{{ order.status }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="info-item full-width">
+                    <span class="info-label">Delivery Address</span>
+                    <span class="info-value">
+                        {{ order.address }}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ORDER ITEMS -->
+        <div class="section-card">
+            <h2 class="section-title">Order Items</h2>
+
+            <div class="table-wrapper">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Perfume</th>
+                            <th>Unit Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+
+                            <td>
+                                <span class="item-name">
+                                    {{ item.perfume_name }}
+                                </span>
+                            </td>
+
+                            <td class="item-price">
+                                ₦{{ "{:,.2f}".format(item.price) }}
+                            </td>
+
+                            <td class="quantity">
+                                {{ item.quantity }}
+                            </td>
+
+                            <td class="item-total">
+                                ₦{{ "{:,.2f}".format(item.total) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="section-card">
+            <h2 class="section-title">Order Summary</h2>
+
+            <div class="summary">
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>
+                        ₦{{ "{:,.2f}".format(order.subtotal) }}
+                    </span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Delivery Fee</span>
+                    <span>
+                        ₦{{ "{:,.2f}".format(order.delivery_fee or 0) }}
+                    </span>
+                </div>
+
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span>
+                        ₦{{ "{:,.2f}".format(order.total) }}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PAYMENT INFORMATION -->
+        <div class="section-card">
+            <h2 class="section-title">Payment Information</h2>
+
+            <div class="payment-grid">
+
+                <div class="payment-item">
+                    <small>Payment Method</small>
+                    <strong>
+                        {{ order.payment_method }}
+                    </strong>
+                </div>
+
+                <div class="payment-item">
+                    <small>Payment Status</small>
+                    <strong>
+                        {{ order.payment_status }}
+                    </strong>
+                </div>
+
+                <div class="payment-item">
+                    <small>Order Date</small>
+                    <strong>
+                        {{ order.created_at.strftime("%d %b %Y, %I:%M %p") }}
+                    </strong>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="section-card">
+            <h2 class="section-title">Customer Notes</h2>
+
+            {% if order.notes %}
+                <div class="notes-box">
+                    {{ order.notes }}
+                </div>
+            {% else %}
+                <div class="no-notes">
+                    No additional notes were provided for this order.
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- BOTTOM ACTIONS -->
+        <div class="bottom-actions">
+            <a
+                href="{{ url_for('admin_orders') }}"
+                class="action-btn back-btn"
+            >
+                ← Back to Orders
+            </a>
+
+            <a
+                href="{{ url_for('index') }}"
+                class="action-btn store-btn"
+            >
+                View Store
+            </a>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

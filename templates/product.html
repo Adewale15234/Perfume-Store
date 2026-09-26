@@ -1,0 +1,660 @@
+{% extends "base.html" %}
+
+{% block title %}{{ perfume.name }} | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .product-page {
+        padding: 45px 0 70px;
+    }
+
+    .breadcrumb {
+        margin-bottom: 30px;
+        font-size: 14px;
+        color: #777;
+    }
+
+    .breadcrumb a {
+        color: #555;
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        color: #c9a227;
+    }
+
+    .product-detail {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 55px;
+        align-items: start;
+    }
+
+    .product-gallery {
+        background: #f7f7f7;
+        border-radius: 16px;
+        overflow: hidden;
+        min-height: 550px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .product-gallery img {
+        width: 100%;
+        height: 550px;
+        object-fit: cover;
+        display: block;
+    }
+
+    .gallery-placeholder {
+        width: 100%;
+        min-height: 550px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 16px;
+        background: linear-gradient(135deg, #f7f7f7, #eeeeee);
+    }
+
+    .sale-label {
+        position: absolute;
+        top: 18px;
+        left: 18px;
+        background: #c9a227;
+        color: #111;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        z-index: 2;
+    }
+
+    .out-label {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: #d32f2f;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        z-index: 2;
+    }
+
+    .product-details {
+        padding-top: 5px;
+    }
+
+    .product-brand {
+        color: #999;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+    }
+
+    .product-title {
+        font-size: 42px;
+        line-height: 1.15;
+        color: #111;
+        margin-bottom: 18px;
+    }
+
+    .product-size {
+        display: inline-block;
+        padding: 7px 12px;
+        background: #f3f3f3;
+        color: #555;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 22px;
+    }
+
+    .price-section {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .current-price {
+        font-size: 32px;
+        font-weight: 700;
+        color: #111;
+    }
+
+    .old-price {
+        font-size: 18px;
+        color: #999;
+        text-decoration: line-through;
+    }
+
+    .discount-text {
+        background: #111;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .description {
+        color: #555;
+        line-height: 1.8;
+        font-size: 16px;
+        margin-bottom: 25px;
+        white-space: pre-line;
+    }
+
+    .product-meta {
+        border-top: 1px solid #e5e5e5;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 18px 0;
+        margin-bottom: 25px;
+    }
+
+    .meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 7px 0;
+        font-size: 14px;
+    }
+
+    .meta-label {
+        color: #888;
+    }
+
+    .meta-value {
+        color: #222;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .stock-available {
+        color: #4d7c0f;
+    }
+
+    .stock-low {
+        color: #c27a00;
+    }
+
+    .stock-out {
+        color: #d32f2f;
+    }
+
+    .purchase-box {
+        background: #fafafa;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .purchase-form {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+    }
+
+    .quantity-group {
+        width: 120px;
+    }
+
+    .quantity-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 7px;
+    }
+
+    .quantity-input {
+        width: 100%;
+        padding: 13px 12px;
+        border: 1px solid #ddd;
+        border-radius: 7px;
+        font-size: 15px;
+        outline: none;
+    }
+
+    .quantity-input:focus {
+        border-color: #c9a227;
+    }
+
+    .add-cart-button {
+        flex: 1;
+        padding: 14px 20px;
+        border: none;
+        border-radius: 7px;
+        background: #111;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .add-cart-button:hover {
+        background: #c9a227;
+        color: #111;
+    }
+
+    .out-of-stock-box {
+        background: #fff4f4;
+        border: 1px solid #f0caca;
+        border-radius: 10px;
+        padding: 18px;
+        color: #b42323;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .back-to-shop {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #333;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .back-to-shop:hover {
+        color: #c9a227;
+    }
+
+    .product-note {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .note-card {
+        border: 1px solid #e7e7e7;
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+        background: #fff;
+    }
+
+    .note-icon {
+        font-size: 23px;
+        margin-bottom: 8px;
+    }
+
+    .note-card h4 {
+        font-size: 13px;
+        color: #222;
+        margin-bottom: 5px;
+    }
+
+    .note-card p {
+        font-size: 11px;
+        color: #888;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+        .product-detail {
+            grid-template-columns: 1fr;
+            gap: 35px;
+        }
+
+        .product-gallery,
+        .product-gallery img,
+        .gallery-placeholder {
+            min-height: 500px;
+            height: 500px;
+        }
+
+        .product-title {
+            font-size: 36px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .product-page {
+            padding: 30px 0 50px;
+        }
+
+        .product-gallery,
+        .product-gallery img,
+        .gallery-placeholder {
+            min-height: 380px;
+            height: 380px;
+        }
+
+        .product-title {
+            font-size: 30px;
+        }
+
+        .current-price {
+            font-size: 27px;
+        }
+
+        .purchase-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .quantity-group {
+            width: 100%;
+        }
+
+        .product-note {
+            grid-template-columns: 1fr;
+        }
+
+        .meta-row {
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="product-page">
+
+    <div class="breadcrumb">
+        <a href="{{ url_for('index') }}">Home</a>
+        <span> / </span>
+        <a href="{{ url_for('shop') }}">Shop</a>
+        <span> / </span>
+        <span>{{ perfume.name }}</span>
+    </div>
+
+    <div class="product-detail">
+
+        <!-- PRODUCT IMAGE -->
+        <div class="product-gallery">
+
+            {% if perfume.has_discount %}
+                <span class="sale-label">
+                    Special Offer
+                </span>
+            {% endif %}
+
+            {% if perfume.stock <= 0 %}
+                <span class="out-label">
+                    Out of Stock
+                </span>
+            {% endif %}
+
+            {% if perfume.image %}
+
+                <img
+                    src="{{ url_for('static', filename='uploads/perfumes/' + perfume.image) }}"
+                    alt="{{ perfume.name }}"
+                >
+
+            {% else %}
+
+                <div class="gallery-placeholder">
+                    No Image Available
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <!-- PRODUCT INFORMATION -->
+        <div class="product-details">
+
+            {% if perfume.brand %}
+                <div class="product-brand">
+                    {{ perfume.brand }}
+                </div>
+            {% endif %}
+
+            <h1 class="product-title">
+                {{ perfume.name }}
+            </h1>
+
+            {% if perfume.size %}
+                <div class="product-size">
+                    Size: {{ perfume.size }}
+                </div>
+            {% endif %}
+
+            <!-- PRICE -->
+            <div class="price-section">
+
+                <span class="current-price">
+                    ₦{{ "{:,.2f}".format(perfume.selling_price) }}
+                </span>
+
+                {% if perfume.has_discount %}
+
+                    <span class="old-price">
+                        ₦{{ "{:,.2f}".format(perfume.price) }}
+                    </span>
+
+                    {% if perfume.price > 0 %}
+
+                        {% set discount_percentage =
+                            ((perfume.price - perfume.selling_price) / perfume.price * 100)
+                        | round(0) | int %}
+
+                        <span class="discount-text">
+                            {{ discount_percentage }}% OFF
+                        </span>
+
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+            <!-- DESCRIPTION -->
+            {% if perfume.description %}
+
+                <div class="description">
+                    {{ perfume.description }}
+                </div>
+
+            {% else %}
+
+                <div class="description">
+                    Experience a beautiful fragrance carefully selected for
+                    customers who appreciate quality and elegance.
+                </div>
+
+            {% endif %}
+
+            <!-- PRODUCT META -->
+            <div class="product-meta">
+
+                {% if perfume.brand %}
+                    <div class="meta-row">
+                        <span class="meta-label">
+                            Brand
+                        </span>
+
+                        <span class="meta-value">
+                            {{ perfume.brand }}
+                        </span>
+                    </div>
+                {% endif %}
+
+                {% if perfume.category %}
+                    <div class="meta-row">
+                        <span class="meta-label">
+                            Category
+                        </span>
+
+                        <span class="meta-value">
+                            {{ perfume.category }}
+                        </span>
+                    </div>
+                {% endif %}
+
+                {% if perfume.size %}
+                    <div class="meta-row">
+                        <span class="meta-label">
+                            Size
+                        </span>
+
+                        <span class="meta-value">
+                            {{ perfume.size }}
+                        </span>
+                    </div>
+                {% endif %}
+
+                <div class="meta-row">
+
+                    <span class="meta-label">
+                        Availability
+                    </span>
+
+                    {% if perfume.stock <= 0 %}
+
+                        <span class="meta-value stock-out">
+                            Out of Stock
+                        </span>
+
+                    {% elif perfume.stock <= 5 %}
+
+                        <span class="meta-value stock-low">
+                            Only {{ perfume.stock }} left
+                        </span>
+
+                    {% else %}
+
+                        <span class="meta-value stock-available">
+                            In Stock
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- PURCHASE -->
+            {% if perfume.stock > 0 %}
+
+                <div class="purchase-box">
+
+                    <form
+                        method="POST"
+                        action="{{ url_for('add_to_cart', perfume_id=perfume.id) }}"
+                        class="purchase-form"
+                    >
+
+                        <div class="quantity-group">
+
+                            <label for="quantity">
+                                Quantity
+                            </label>
+
+                            <input
+                                type="number"
+                                id="quantity"
+                                name="quantity"
+                                class="quantity-input"
+                                value="1"
+                                min="1"
+                                max="{{ perfume.stock }}"
+                                required
+                            >
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="add-cart-button"
+                        >
+                            Add to Cart
+                        </button>
+
+                    </form>
+
+                </div>
+
+            {% else %}
+
+                <div class="out-of-stock-box">
+                    This perfume is currently out of stock.
+                </div>
+
+            {% endif %}
+
+            <a
+                href="{{ url_for('shop') }}"
+                class="back-to-shop"
+            >
+                ← Continue Shopping
+            </a>
+
+            <!-- SMALL SERVICE INFORMATION -->
+            <div class="product-note">
+
+                <div class="note-card">
+
+                    <div class="note-icon">
+                        🚚
+                    </div>
+
+                    <h4>
+                        Delivery
+                    </h4>
+
+                    <p>
+                        We arrange delivery after your order is confirmed.
+                    </p>
+
+                </div>
+
+                <div class="note-card">
+
+                    <div class="note-icon">
+                        ✨
+                    </div>
+
+                    <h4>
+                        Quality
+                    </h4>
+
+                    <p>
+                        Carefully selected fragrances for your collection.
+                    </p>
+
+                </div>
+
+                <div class="note-card">
+
+                    <div class="note-icon">
+                        🛒
+                    </div>
+
+                    <h4>
+                        Easy Ordering
+                    </h4>
+
+                    <p>
+                        Add your favourite perfume to your cart and checkout.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

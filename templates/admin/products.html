@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Products | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .admin-page {
+        padding: 35px 20px 60px;
+        background: #f7f7f7;
+        min-height: calc(100vh - 180px);
+    }
+
+    .admin-container {
+        max-width: 1250px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: #111111;
+        color: #ffffff;
+        border-radius: 16px;
+        padding: 28px 30px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .page-header h1 {
+        margin: 0 0 7px;
+        font-size: 29px;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #cccccc;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .header-btn {
+        display: inline-block;
+        padding: 11px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .add-btn {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    .dashboard-btn {
+        background: #ffffff;
+        color: #111111;
+    }
+
+    .products-card {
+        background: #ffffff;
+        border: 1px solid #eeeeee;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+    }
+
+    .products-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .products-top h2 {
+        margin: 0;
+        font-size: 21px;
+        color: #111111;
+    }
+
+    .product-count {
+        color: #777777;
+        font-size: 13px;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .products-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 950px;
+    }
+
+    .products-table th,
+    .products-table td {
+        padding: 13px 12px;
+        text-align: left;
+        border-bottom: 1px solid #eeeeee;
+        vertical-align: middle;
+    }
+
+    .products-table th {
+        background: #fafafa;
+        color: #555555;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .products-table td {
+        color: #333333;
+        font-size: 13px;
+    }
+
+    .products-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .product-image {
+        width: 58px;
+        height: 58px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f3f3f3;
+        border: 1px solid #eeeeee;
+        display: block;
+    }
+
+    .no-image {
+        width: 58px;
+        height: 58px;
+        border-radius: 8px;
+        background: #eeeeee;
+        color: #999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        text-align: center;
+    }
+
+    .product-name {
+        font-weight: 800;
+        color: #111111;
+        margin-bottom: 4px;
+    }
+
+    .product-brand {
+        color: #777777;
+        font-size: 12px;
+    }
+
+    .price-main {
+        font-weight: 800;
+        color: #111111;
+    }
+
+    .old-price {
+        display: block;
+        margin-top: 3px;
+        color: #999999;
+        font-size: 11px;
+        text-decoration: line-through;
+    }
+
+    .stock {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .stock-good {
+        background: #e3f5e9;
+        color: #24703e;
+    }
+
+    .stock-low {
+        background: #fff4d6;
+        color: #8a6500;
+    }
+
+    .stock-out {
+        background: #ffe5e5;
+        color: #a52c2c;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .status-active {
+        background: #e3f5e9;
+        color: #24703e;
+    }
+
+    .status-inactive {
+        background: #eeeeee;
+        color: #666666;
+    }
+
+    .featured-badge {
+        display: inline-block;
+        margin-top: 5px;
+        padding: 4px 7px;
+        border-radius: 4px;
+        background: #fff5d7;
+        color: #8a6500;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .actions {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        display: inline-block;
+        padding: 7px 10px;
+        border-radius: 6px;
+        text-decoration: none;
+        border: none;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .edit-btn {
+        background: #111111;
+        color: #ffffff;
+    }
+
+    .edit-btn:hover {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    .delete-btn {
+        background: #ffe5e5;
+        color: #a52c2c;
+    }
+
+    .delete-btn:hover {
+        background: #a52c2c;
+        color: #ffffff;
+    }
+
+    .view-btn {
+        background: #eeeeee;
+        color: #333333;
+    }
+
+    .view-btn:hover {
+        background: #dddddd;
+    }
+
+    .empty-products {
+        text-align: center;
+        padding: 60px 20px;
+        color: #777777;
+    }
+
+    .empty-products-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background: #f1f1f1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999999;
+        font-size: 24px;
+        font-weight: 800;
+    }
+
+    .empty-products h3 {
+        margin: 0 0 8px;
+        color: #333333;
+        font-size: 19px;
+    }
+
+    .empty-products p {
+        margin: 0 0 20px;
+        font-size: 13px;
+    }
+
+    .empty-add-btn {
+        display: inline-block;
+        padding: 11px 17px;
+        background: #111111;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .empty-add-btn:hover {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    @media (max-width: 800px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .products-card {
+            padding: 18px;
+        }
+    }
+
+    @media (max-width: 500px) {
+        .admin-page {
+            padding: 25px 15px 45px;
+        }
+
+        .page-header {
+            padding: 23px;
+        }
+
+        .page-header h1 {
+            font-size: 25px;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .products-top {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+
+    <div class="admin-container">
+
+        <!-- Page Header -->
+        <div class="page-header">
+
+            <div>
+                <h1>Manage Products</h1>
+                <p>Add, edit, view and manage your perfume products.</p>
+            </div>
+
+            <div class="header-actions">
+
+                <a
+                    href="{{ url_for('admin_add_product') }}"
+                    class="header-btn add-btn"
+                >
+                    + Add Perfume
+                </a>
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="header-btn dashboard-btn"
+                >
+                    Dashboard
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Products -->
+        <div class="products-card">
+
+            <div class="products-top">
+
+                <h2>All Perfumes</h2>
+
+                <div class="product-count">
+                    {{ perfumes|length }} product{% if perfumes|length != 1 %}s{% endif %}
+                </div>
+
+            </div>
+
+            {% if perfumes %}
+
+            <div class="table-wrapper">
+
+                <table class="products-table">
+
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for perfume in perfumes %}
+
+                        <tr>
+
+                            <!-- Image -->
+                            <td>
+
+                                {% if perfume.image %}
+
+                                <img
+                                    src="{{ url_for('static', filename='uploads/perfumes/' ~ perfume.image) }}"
+                                    alt="{{ perfume.name }}"
+                                    class="product-image"
+                                >
+
+                                {% else %}
+
+                                <div class="no-image">
+                                    No Image
+                                </div>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Product -->
+                            <td>
+
+                                <div class="product-name">
+                                    {{ perfume.name }}
+                                </div>
+
+                                {% if perfume.brand %}
+                                <div class="product-brand">
+                                    {{ perfume.brand }}
+                                </div>
+                                {% endif %}
+
+                                {% if perfume.size %}
+                                <div class="product-brand">
+                                    {{ perfume.size }}
+                                </div>
+                                {% endif %}
+
+                                {% if perfume.featured %}
+                                <span class="featured-badge">
+                                    FEATURED
+                                </span>
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Category -->
+                            <td>
+                                {{ perfume.category or '-' }}
+                            </td>
+
+                            <!-- Price -->
+                            <td>
+
+                                <span class="price-main">
+                                    ₦{{ "{:,.2f}".format(perfume.selling_price) }}
+                                </span>
+
+                                {% if perfume.has_discount %}
+
+                                <span class="old-price">
+                                    ₦{{ "{:,.2f}".format(perfume.price) }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Stock -->
+                            <td>
+
+                                {% if perfume.stock <= 0 %}
+
+                                <span class="stock stock-out">
+                                    Out of Stock
+                                </span>
+
+                                {% elif perfume.stock <= 5 %}
+
+                                <span class="stock stock-low">
+                                    {{ perfume.stock }} left
+                                </span>
+
+                                {% else %}
+
+                                <span class="stock stock-good">
+                                    {{ perfume.stock }} available
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+
+                                {% if perfume.active %}
+
+                                <span class="status status-active">
+                                    Active
+                                </span>
+
+                                {% else %}
+
+                                <span class="status status-inactive">
+                                    Inactive
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Actions -->
+                            <td>
+
+                                <div class="actions">
+
+                                    <a
+                                        href="{{ url_for('product', perfume_id=perfume.id) }}"
+                                        class="action-btn view-btn"
+                                        target="_blank"
+                                    >
+                                        View
+                                    </a>
+
+                                    <a
+                                        href="{{ url_for('admin_edit_product', perfume_id=perfume.id) }}"
+                                        class="action-btn edit-btn"
+                                    >
+                                        Edit
+                                    </a>
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for('admin_delete_product', perfume_id=perfume.id) }}"
+                                        style="display: inline;"
+                                        onsubmit="return confirm('Are you sure you want to delete this perfume? This action cannot be undone.');"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="action-btn delete-btn"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-products">
+
+                <div class="empty-products-icon">
+                    P
+                </div>
+
+                <h3>No Perfumes Yet</h3>
+
+                <p>
+                    You have not added any perfume products to your store.
+                </p>
+
+                <a
+                    href="{{ url_for('admin_add_product') }}"
+                    class="empty-add-btn"
+                >
+                    + Add Your First Perfume
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}

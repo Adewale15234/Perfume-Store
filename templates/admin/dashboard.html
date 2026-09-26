@@ -1,0 +1,507 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .admin-page {
+        padding: 35px 20px 60px;
+        background: #f7f7f7;
+        min-height: calc(100vh - 180px);
+    }
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .admin-header {
+        background: #111111;
+        color: #ffffff;
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .admin-header h1 {
+        margin: 0 0 7px;
+        font-size: 30px;
+    }
+
+    .admin-header p {
+        margin: 0;
+        color: #cccccc;
+        font-size: 14px;
+    }
+
+    .admin-header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .admin-header-actions a {
+        display: inline-block;
+        text-decoration: none;
+        padding: 11px 16px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .view-store-btn {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    .logout-btn {
+        background: #ffffff;
+        color: #111111;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 23px;
+        border: 1px solid #eeeeee;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+    }
+
+    .stat-label {
+        color: #777777;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .stat-value {
+        color: #111111;
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stat-card.gold {
+        border-top: 3px solid #d4af37;
+    }
+
+    .stat-card.green {
+        border-top: 3px solid #287a4b;
+    }
+
+    .stat-card.blue {
+        border-top: 3px solid #3973b9;
+    }
+
+    .stat-card.red {
+        border-top: 3px solid #b33a3a;
+    }
+
+    .admin-section {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #eeeeee;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 21px;
+        color: #111111;
+    }
+
+    .section-link {
+        color: #111111;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .section-link:hover {
+        color: #d4af37;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+
+    .quick-action {
+        text-decoration: none;
+        background: #fafafa;
+        border: 1px solid #eeeeee;
+        border-radius: 10px;
+        padding: 20px;
+        color: #111111;
+        transition: 0.2s ease;
+    }
+
+    .quick-action:hover {
+        border-color: #d4af37;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .quick-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        background: #111111;
+        color: #d4af37;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        margin-bottom: 13px;
+    }
+
+    .quick-action h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+    }
+
+    .quick-action p {
+        margin: 0;
+        color: #777777;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .dashboard-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+    .dashboard-table th,
+    .dashboard-table td {
+        padding: 13px 12px;
+        text-align: left;
+        border-bottom: 1px solid #eeeeee;
+        font-size: 13px;
+    }
+
+    .dashboard-table th {
+        background: #fafafa;
+        color: #555555;
+        font-weight: 700;
+    }
+
+    .dashboard-table td {
+        color: #333333;
+    }
+
+    .dashboard-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-number {
+        font-weight: 700;
+        color: #111111;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #eeeeee;
+        color: #444444;
+    }
+
+    .status-pending {
+        background: #fff4d6;
+        color: #8a6500;
+    }
+
+    .status-confirmed {
+        background: #e6f0ff;
+        color: #24558c;
+    }
+
+    .status-processing {
+        background: #eee7ff;
+        color: #6244a3;
+    }
+
+    .status-out-for-delivery {
+        background: #e5f7ed;
+        color: #267346;
+    }
+
+    .status-delivered {
+        background: #dff5e7;
+        color: #1f6d3c;
+    }
+
+    .status-cancelled {
+        background: #ffe5e5;
+        color: #a52c2c;
+    }
+
+    .view-order {
+        text-decoration: none;
+        color: #111111;
+        font-weight: 700;
+    }
+
+    .view-order:hover {
+        color: #d4af37;
+    }
+
+    .empty-dashboard {
+        text-align: center;
+        padding: 30px 15px;
+        color: #777777;
+        font-size: 14px;
+    }
+
+    @media (max-width: 950px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .quick-actions {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .admin-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 550px) {
+        .admin-page {
+            padding: 25px 15px 45px;
+        }
+
+        .admin-header {
+            padding: 23px;
+        }
+
+        .admin-header h1 {
+            font-size: 25px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-section {
+            padding: 20px 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+
+    <div class="admin-container">
+
+        <!-- Dashboard Header -->
+        <div class="admin-header">
+
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p>Manage your perfumes, stock and customer orders.</p>
+            </div>
+
+            <div class="admin-header-actions">
+                <a href="{{ url_for('index') }}" class="view-store-btn">
+                    View Store
+                </a>
+
+                <a href="{{ url_for('admin_logout') }}" class="logout-btn">
+                    Logout
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+
+            <div class="stat-card gold">
+                <div class="stat-label">Total Perfumes</div>
+                <div class="stat-value">{{ total_perfumes|default(0) }}</div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-label">Active Perfumes</div>
+                <div class="stat-value">{{ active_perfumes|default(0) }}</div>
+            </div>
+
+            <div class="stat-card blue">
+                <div class="stat-label">Total Orders</div>
+                <div class="stat-value">{{ total_orders|default(0) }}</div>
+            </div>
+
+            <div class="stat-card red">
+                <div class="stat-label">Pending Orders</div>
+                <div class="stat-value">{{ pending_orders|default(0) }}</div>
+            </div>
+
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-section">
+
+            <div class="section-header">
+                <h2>Quick Actions</h2>
+            </div>
+
+            <div class="quick-actions">
+
+                <a href="{{ url_for('admin_products') }}" class="quick-action">
+                    <div class="quick-icon">P</div>
+                    <h3>Manage Products</h3>
+                    <p>View, edit and delete perfumes in your store.</p>
+                </a>
+
+                <a href="{{ url_for('admin_add_product') }}" class="quick-action">
+                    <div class="quick-icon">+</div>
+                    <h3>Add Perfume</h3>
+                    <p>Add a new perfume with price, stock and image.</p>
+                </a>
+
+                <a href="{{ url_for('admin_orders') }}" class="quick-action">
+                    <div class="quick-icon">O</div>
+                    <h3>Manage Orders</h3>
+                    <p>View customer orders and update their status.</p>
+                </a>
+
+                <a href="{{ url_for('index') }}" class="quick-action">
+                    <div class="quick-icon">S</div>
+                    <h3>Open Store</h3>
+                    <p>Visit the customer-facing perfume store.</p>
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="admin-section">
+
+            <div class="section-header">
+
+                <h2>Recent Orders</h2>
+
+                <a href="{{ url_for('admin_orders') }}" class="section-link">
+                    View All Orders →
+                </a>
+
+            </div>
+
+            {% if recent_orders %}
+
+            <div class="dashboard-table-wrapper">
+
+                <table class="dashboard-table">
+
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for order in recent_orders %}
+
+                        <tr>
+
+                            <td>
+                                <span class="order-number">
+                                    {{ order.order_number }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ order.customer_name }}
+                            </td>
+
+                            <td>
+                                ₦{{ "{:,.2f}".format(order.total) }}
+                            </td>
+
+                            <td>
+                                <span class="status status-{{ order.status|lower|replace(' ', '-') }}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ order.created_at.strftime('%d %b %Y') if order.created_at else '-' }}
+                            </td>
+
+                            <td>
+                                <a
+                                    href="{{ url_for('admin_order_details', order_id=order.id) }}"
+                                    class="view-order"
+                                >
+                                    View
+                                </a>
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-dashboard">
+                No orders have been placed yet.
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}

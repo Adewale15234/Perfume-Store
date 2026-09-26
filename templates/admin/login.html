@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Login | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .admin-login-page {
+        min-height: calc(100vh - 180px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 50px 20px;
+        background: #f7f7f7;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 430px;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.10);
+        border: 1px solid #eeeeee;
+    }
+
+    .login-logo {
+        width: 65px;
+        height: 65px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: #111111;
+        color: #d4af37;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    .login-title {
+        text-align: center;
+        margin-bottom: 8px;
+        color: #111111;
+        font-size: 28px;
+    }
+
+    .login-subtitle {
+        text-align: center;
+        color: #777777;
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+
+    .login-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    .login-form label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #222222;
+    }
+
+    .login-form input {
+        width: 100%;
+        padding: 14px 15px;
+        border: 1px solid #dddddd;
+        border-radius: 8px;
+        font-size: 15px;
+        background: #ffffff;
+        color: #222222;
+        box-sizing: border-box;
+        outline: none;
+        transition: 0.2s ease;
+    }
+
+    .login-form input:focus {
+        border-color: #d4af37;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-wrapper input {
+        padding-right: 85px;
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        color: #777777;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        padding: 6px;
+    }
+
+    .toggle-password:hover {
+        color: #111111;
+    }
+
+    .login-button {
+        width: 100%;
+        border: none;
+        background: #111111;
+        color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s ease;
+        margin-top: 5px;
+    }
+
+    .login-button:hover {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #eeeeee;
+    }
+
+    .login-footer a {
+        color: #555555;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .login-footer a:hover {
+        color: #d4af37;
+    }
+
+    .admin-note {
+        margin-top: 20px;
+        padding: 12px 15px;
+        background: #faf8ef;
+        border-left: 3px solid #d4af37;
+        border-radius: 5px;
+        color: #666666;
+        font-size: 12px;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 500px) {
+        .admin-login-page {
+            padding: 30px 15px;
+        }
+
+        .login-card {
+            padding: 30px 22px;
+        }
+
+        .login-title {
+            font-size: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="admin-login-page">
+
+    <div class="login-card">
+
+        <div class="login-logo">
+            P
+        </div>
+
+        <h1 class="login-title">Admin Login</h1>
+
+        <p class="login-subtitle">
+            Sign in to manage your perfume store
+        </p>
+
+        <form method="POST" action="{{ url_for('admin_login') }}" class="login-form">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    autocomplete="username"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        onclick="togglePassword()"
+                        id="togglePasswordButton"
+                    >
+                        Show
+                    </button>
+
+                </div>
+            </div>
+
+            <button type="submit" class="login-button">
+                Login to Admin
+            </button>
+
+        </form>
+
+        <div class="admin-note">
+            <strong>Admin Area:</strong>
+            This section is for managing perfumes, stock, orders and store information.
+        </div>
+
+        <div class="login-footer">
+            <a href="{{ url_for('index') }}">
+                ← Back to Store
+            </a>
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById("password");
+        const toggleButton = document.getElementById("togglePasswordButton");
+
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+            toggleButton.textContent = "Hide";
+        } else {
+            passwordInput.type = "password";
+            toggleButton.textContent = "Show";
+        }
+    }
+</script>
+{% endblock %}

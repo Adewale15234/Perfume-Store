@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Orders | Admin | Perfume Store{% endblock %}
+
+{% block head %}
+<style>
+    .admin-page {
+        padding: 35px 20px 60px;
+        background: #f7f7f7;
+        min-height: calc(100vh - 180px);
+    }
+
+    .admin-container {
+        max-width: 1250px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: #111111;
+        color: #ffffff;
+        border-radius: 16px;
+        padding: 28px 30px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .page-header h1 {
+        margin: 0 0 7px;
+        font-size: 29px;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: #cccccc;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .header-btn {
+        display: inline-block;
+        padding: 11px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .dashboard-btn {
+        background: #ffffff;
+        color: #111111;
+    }
+
+    .store-btn {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    .orders-card {
+        background: #ffffff;
+        border: 1px solid #eeeeee;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.04);
+    }
+
+    .orders-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .orders-top h2 {
+        margin: 0;
+        font-size: 21px;
+        color: #111111;
+    }
+
+    .order-count {
+        color: #777777;
+        font-size: 13px;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1050px;
+    }
+
+    .orders-table th,
+    .orders-table td {
+        padding: 13px 12px;
+        text-align: left;
+        border-bottom: 1px solid #eeeeee;
+        vertical-align: middle;
+    }
+
+    .orders-table th {
+        background: #fafafa;
+        color: #555555;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .orders-table td {
+        color: #333333;
+        font-size: 13px;
+    }
+
+    .orders-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-number {
+        color: #111111;
+        font-weight: 800;
+    }
+
+    .customer-name {
+        color: #111111;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .customer-contact {
+        color: #777777;
+        font-size: 11px;
+    }
+
+    .total {
+        color: #111111;
+        font-weight: 800;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .status-pending {
+        background: #fff4d6;
+        color: #8a6500;
+    }
+
+    .status-confirmed {
+        background: #e6f0ff;
+        color: #24558c;
+    }
+
+    .status-processing {
+        background: #eee7ff;
+        color: #6244a3;
+    }
+
+    .status-out-for-delivery {
+        background: #e5f7ed;
+        color: #267346;
+    }
+
+    .status-delivered {
+        background: #dff5e7;
+        color: #1f6d3c;
+    }
+
+    .status-cancelled {
+        background: #ffe5e5;
+        color: #a52c2c;
+    }
+
+    .payment-status {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 5px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    .payment-paid {
+        background: #e3f5e9;
+        color: #24703e;
+    }
+
+    .payment-pending {
+        background: #fff4d6;
+        color: #8a6500;
+    }
+
+    .payment-failed {
+        background: #ffe5e5;
+        color: #a52c2c;
+    }
+
+    .payment-other {
+        background: #eeeeee;
+        color: #555555;
+    }
+
+    .view-btn {
+        display: inline-block;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: #111111;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .view-btn:hover {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    .empty-orders {
+        text-align: center;
+        padding: 60px 20px;
+        color: #777777;
+    }
+
+    .empty-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        background: #f1f1f1;
+        color: #999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 800;
+    }
+
+    .empty-orders h3 {
+        margin: 0 0 8px;
+        color: #333333;
+        font-size: 19px;
+    }
+
+    .empty-orders p {
+        margin: 0 0 20px;
+        font-size: 13px;
+    }
+
+    .empty-dashboard-btn {
+        display: inline-block;
+        padding: 11px 17px;
+        background: #111111;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .empty-dashboard-btn:hover {
+        background: #d4af37;
+        color: #111111;
+    }
+
+    @media (max-width: 800px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .orders-card {
+            padding: 18px;
+        }
+    }
+
+    @media (max-width: 500px) {
+        .admin-page {
+            padding: 25px 15px 45px;
+        }
+
+        .page-header {
+            padding: 23px;
+        }
+
+        .page-header h1 {
+            font-size: 25px;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .orders-top {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+
+    <div class="admin-container">
+
+        <!-- Page Header -->
+        <div class="page-header">
+
+            <div>
+                <h1>Manage Orders</h1>
+                <p>View customer orders and manage their status.</p>
+            </div>
+
+            <div class="header-actions">
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="header-btn dashboard-btn"
+                >
+                    Dashboard
+                </a>
+
+                <a
+                    href="{{ url_for('index') }}"
+                    class="header-btn store-btn"
+                    target="_blank"
+                >
+                    View Store
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Orders -->
+        <div class="orders-card">
+
+            <div class="orders-top">
+
+                <h2>All Orders</h2>
+
+                <div class="order-count">
+                    {{ orders|length }} order{% if orders|length != 1 %}s{% endif %}
+                </div>
+
+            </div>
+
+            {% if orders %}
+
+            <div class="table-wrapper">
+
+                <table class="orders-table">
+
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Payment Status</th>
+                            <th>Order Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for order in orders %}
+
+                        <tr>
+
+                            <!-- Order Number -->
+                            <td>
+                                <span class="order-number">
+                                    {{ order.order_number }}
+                                </span>
+                            </td>
+
+                            <!-- Customer -->
+                            <td>
+
+                                <div class="customer-name">
+                                    {{ order.customer_name }}
+                                </div>
+
+                                {% if order.phone %}
+                                <div class="customer-contact">
+                                    {{ order.phone }}
+                                </div>
+                                {% endif %}
+
+                                {% if order.email %}
+                                <div class="customer-contact">
+                                    {{ order.email }}
+                                </div>
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Total -->
+                            <td>
+                                <span class="total">
+                                    ₦{{ "{:,.2f}".format(order.total) }}
+                                </span>
+                            </td>
+
+                            <!-- Payment Method -->
+                            <td>
+                                {{ order.payment_method or '-' }}
+                            </td>
+
+                            <!-- Payment Status -->
+                            <td>
+
+                                {% set payment_status = (order.payment_status or 'Pending')|lower %}
+
+                                {% if payment_status == 'paid' %}
+
+                                <span class="payment-status payment-paid">
+                                    Paid
+                                </span>
+
+                                {% elif payment_status == 'pending' %}
+
+                                <span class="payment-status payment-pending">
+                                    Pending
+                                </span>
+
+                                {% elif payment_status == 'failed' %}
+
+                                <span class="payment-status payment-failed">
+                                    Failed
+                                </span>
+
+                                {% else %}
+
+                                <span class="payment-status payment-other">
+                                    {{ order.payment_status or 'Pending' }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Order Status -->
+                            <td>
+
+                                <span class="status status-{{ (order.status or 'Pending')|lower|replace(' ', '-') }}">
+                                    {{ order.status or 'Pending' }}
+                                </span>
+
+                            </td>
+
+                            <!-- Date -->
+                            <td>
+                                {% if order.created_at %}
+                                    {{ order.created_at.strftime('%d %b %Y') }}
+                                    <br>
+                                    <span style="font-size: 10px; color: #999999;">
+                                        {{ order.created_at.strftime('%I:%M %p') }}
+                                    </span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td>
+
+                                <a
+                                    href="{{ url_for('admin_order_details', order_id=order.id) }}"
+                                    class="view-btn"
+                                >
+                                    View Details
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="empty-orders">
+
+                <div class="empty-icon">
+                    O
+                </div>
+
+                <h3>No Orders Yet</h3>
+
+                <p>
+                    Customer orders will appear here when they place an order.
+                </p>
+
+                <a
+                    href="{{ url_for('admin_dashboard') }}"
+                    class="empty-dashboard-btn"
+                >
+                    Back to Dashboard
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}
