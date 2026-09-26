@@ -43,10 +43,20 @@ app.config["SECRET_KEY"] = os.getenv(
     "perfume-store-secret-key-change-this"
 )
 
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    "sqlite:///"
-    + os.path.join(DATABASE_DIR, "perfume.db")
-)
+database_url = os.getenv("DATABASE_URL")
+
+if database_url:
+    database_url = database_url.strip()
+
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        "sqlite:///"
+        + os.path.join(DATABASE_DIR, "perfume.db")
+    )
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
@@ -1986,6 +1996,10 @@ def initialize_database():
             print(
                 "========================================"
             )
+
+
+with app.app_context():
+    initialize_database()
 
 
 # ============================================================
