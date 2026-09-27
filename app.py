@@ -1752,7 +1752,7 @@ def admin_add_product():
         active = (
             request.form.get(
                 "active"
-            ) == "on"
+            ) in ("on", "1", "true", "True")
         )
 
         if not name:
@@ -1974,7 +1974,7 @@ def admin_edit_product(perfume_id):
         perfume.active = (
             request.form.get(
                 "active"
-            ) == "on"
+            ) in ("on", "1", "true", "True")
         )
 
         image_file = request.files.get(
