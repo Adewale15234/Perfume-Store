@@ -13,7 +13,11 @@ from flask import (
     flash,
 )
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.utils import secure_filename
+from werkzeug.utils import (
+    secure_filename,
+    generate_password_hash,
+    check_password_hash,
+)
 from dotenv import load_dotenv
 
 
@@ -25,7 +29,11 @@ load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-DATABASE_DIR = os.path.join(BASE_DIR, "database")
+DATABASE_DIR = os.path.join(
+    BASE_DIR,
+    "database"
+)
+
 UPLOAD_FOLDER = os.path.join(
     BASE_DIR,
     "static",
@@ -33,33 +41,106 @@ UPLOAD_FOLDER = os.path.join(
     "perfumes"
 )
 
-os.makedirs(DATABASE_DIR, exist_ok=True)
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(
+    DATABASE_DIR,
+    exist_ok=True
+)
+
+os.makedirs(
+    UPLOAD_FOLDER,
+    exist_ok=True
+)
+
 
 app = Flask(__name__)
+
+
+# ============================================================
+# SECRET KEY
+# ============================================================
 
 app.config["SECRET_KEY"] = os.getenv(
     "SECRET_KEY",
     "perfume-store-secret-key-change-this"
 )
 
+
+# ============================================================
+# DATABASE CONFIGURATION
+# ============================================================
+
 database_url = os.getenv("DATABASE_URL")
 
+
 if database_url:
+
+    # Remove whitespace
     database_url = database_url.strip()
 
+    # Remove accidental quotes around the entire URL.
+    #
+    # Correct:
+    # postgresql://user:password@host/database
+    #
+    # Incorrect:
+    # 'postgresql://user:password@host/database'
+    #
+    database_url = database_url.strip("'\"")
+
+    # Render / older PostgreSQL URLs sometimes use
+    # postgres:// instead of postgresql://.
     if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+        database_url = database_url.replace(
+            "postgres://",
+            "postgresql://",
+            1
+        )
+
+    # If the URL is a normal PostgreSQL URL, use psycopg.
+    #
+    # This requires:
+    # psycopg[binary]
+    #
+    # If your DATABASE_URL already specifies a driver,
+    # leave it unchanged.
+    if database_url.startswith("postgresql://"):
+
+        database_url = database_url.replace(
+            "postgresql://",
+            "postgresql+psycopg://",
+            1
+        )
 
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
 else:
+
+    # Local development fallback.
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         "sqlite:///"
-        + os.path.join(DATABASE_DIR, "perfume.db")
+        + os.path.join(
+            DATABASE_DIR,
+            "perfume.db"
+        )
     )
 
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+
+# ============================================================
+# FILE UPLOAD SETTINGS
+# ============================================================
+
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+
+
+# ============================================================
+# DATABASE
+# ============================================================
 
 db = SQLAlchemy(app)
 
@@ -90,9 +171,13 @@ ORDER_STATUSES = [
 # ============================================================
 
 class Admin(db.Model):
+
     __tablename__ = "admins"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     username = db.Column(
         db.String(80),
@@ -101,7 +186,7 @@ class Admin(db.Model):
     )
 
     password = db.Column(
-        db.String(200),
+        db.String(255),
         nullable=False
     )
 
@@ -111,10 +196,12 @@ class Admin(db.Model):
     )
 
     def __repr__(self):
+
         return f"<Admin {self.username}>"
 
 
 class Perfume(db.Model):
+
     __tablename__ = "perfumes"
 
     id = db.Column(
@@ -198,22 +285,20 @@ class Perfume(db.Model):
 
     @property
     def selling_price(self):
-        """
-        Returns discount price if one exists,
-        otherwise returns normal price.
-        """
 
         if (
             self.discount_price is not None
             and self.discount_price > 0
             and self.discount_price < self.price
         ):
+
             return self.discount_price
 
         return self.price
 
     @property
     def has_discount(self):
+
         return (
             self.discount_price is not None
             and self.discount_price > 0
@@ -221,10 +306,12 @@ class Perfume(db.Model):
         )
 
     def __repr__(self):
+
         return f"<Perfume {self.name}>"
 
 
 class Order(db.Model):
+
     __tablename__ = "orders"
 
     id = db.Column(
@@ -322,10 +409,12 @@ class Order(db.Model):
     )
 
     def __repr__(self):
+
         return f"<Order {self.order_number}>"
 
 
 class OrderItem(db.Model):
+
     __tablename__ = "order_items"
 
     id = db.Column(
@@ -368,6 +457,7 @@ class OrderItem(db.Model):
     )
 
     def __repr__(self):
+
         return f"<OrderItem {self.perfume_name}>"
 
 
@@ -376,35 +466,41 @@ class OrderItem(db.Model):
 # ============================================================
 
 def allowed_file(filename):
-    """
-    Check whether uploaded file has an allowed extension.
-    """
 
     return (
         "." in filename
-        and filename.rsplit(".", 1)[1].lower()
+        and filename.rsplit(
+            ".",
+            1
+        )[1].lower()
         in ALLOWED_EXTENSIONS
     )
 
 
 def save_image(file):
-    """
-    Save uploaded perfume image and return its filename.
-    """
 
     if not file or not file.filename:
+
         return None
 
     if not allowed_file(file.filename):
+
         return None
 
-    extension = file.filename.rsplit(".", 1)[1].lower()
-
-    filename = (
-        f"{uuid.uuid4().hex}.{extension}"
+    extension = (
+        file.filename
+        .rsplit(".", 1)[1]
+        .lower()
     )
 
-    filename = secure_filename(filename)
+    filename = (
+        f"{uuid.uuid4().hex}"
+        f".{extension}"
+    )
+
+    filename = secure_filename(
+        filename
+    )
 
     file.save(
         os.path.join(
@@ -417,11 +513,9 @@ def save_image(file):
 
 
 def delete_image(filename):
-    """
-    Delete an image from the uploads folder.
-    """
 
     if not filename:
+
         return
 
     path = os.path.join(
@@ -430,21 +524,28 @@ def delete_image(filename):
     )
 
     if os.path.exists(path):
+
         try:
+
             os.remove(path)
+
         except OSError:
+
             pass
 
 
 def admin_required(function):
-    """
-    Protect admin pages.
-    """
 
     @wraps(function)
-    def decorated_function(*args, **kwargs):
+    def decorated_function(
+        *args,
+        **kwargs
+    ):
 
-        if not session.get("admin_logged_in"):
+        if not session.get(
+            "admin_logged_in"
+        ):
+
             flash(
                 "Please login as administrator.",
                 "warning"
@@ -454,44 +555,38 @@ def admin_required(function):
                 url_for("admin_login")
             )
 
-        return function(*args, **kwargs)
+        return function(
+            *args,
+            **kwargs
+        )
 
     return decorated_function
 
 
 def get_cart():
-    """
-    Return the cart stored inside the user's session.
 
-    Example:
+    cart = session.get(
+        "cart",
+        {}
+    )
 
-    {
-        "1": 2,
-        "5": 1
-    }
+    if not isinstance(
+        cart,
+        dict
+    ):
 
-    Means:
-    Perfume ID 1 = quantity 2
-    Perfume ID 5 = quantity 1
-    """
+        cart = {}
 
-    return session.get("cart", {})
+    return cart
 
 
 def save_cart(cart):
-    """
-    Save cart back into session.
-    """
 
     session["cart"] = cart
     session.modified = True
 
 
 def cart_items():
-    """
-    Get actual perfume objects and quantities
-    from the session cart.
-    """
 
     cart = get_cart()
 
@@ -499,36 +594,64 @@ def cart_items():
 
     for perfume_id, quantity in cart.items():
 
+        try:
+
+            perfume_id = int(
+                perfume_id
+            )
+
+            quantity = int(
+                quantity
+            )
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            continue
+
         perfume = db.session.get(
             Perfume,
-            int(perfume_id)
+            perfume_id
         )
 
         if not perfume:
+
             continue
 
         if not perfume.active:
+
             continue
 
-        quantity = int(quantity)
+        if quantity <= 0:
+
+            continue
+
+        # Never allow the session to contain
+        # more than the available stock.
+        if quantity > perfume.stock:
+
+            quantity = perfume.stock
 
         if quantity <= 0:
+
             continue
 
         items.append({
             "perfume": perfume,
             "quantity": quantity,
             "price": perfume.selling_price,
-            "total": perfume.selling_price * quantity,
+            "total": (
+                perfume.selling_price
+                * quantity
+            ),
         })
 
     return items
 
 
 def cart_subtotal():
-    """
-    Calculate cart subtotal.
-    """
 
     return sum(
         item["total"]
@@ -537,15 +660,29 @@ def cart_subtotal():
 
 
 def cart_count():
-    """
-    Calculate total number of products
-    inside cart.
-    """
 
-    return sum(
-        int(quantity)
-        for quantity in get_cart().values()
-    )
+    total = 0
+
+    for quantity in get_cart().values():
+
+        try:
+
+            quantity = int(
+                quantity
+            )
+
+            if quantity > 0:
+
+                total += quantity
+
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            continue
+
+    return total
 
 
 # ============================================================
@@ -586,7 +723,9 @@ def index():
 
         featured_perfumes = (
             Perfume.query
-            .filter_by(active=True)
+            .filter_by(
+                active=True
+            )
             .order_by(
                 Perfume.created_at.desc()
             )
@@ -623,7 +762,9 @@ def shop():
 
     if search:
 
-        search_pattern = f"%{search}%"
+        search_pattern = (
+            f"%{search}%"
+        )
 
         query = query.filter(
             db.or_(
@@ -660,7 +801,7 @@ def shop():
         .filter(
             Perfume.category.isnot(None),
             Perfume.category != "",
-            Perfume.active == True
+            Perfume.active.is_(True)
         )
         .distinct()
         .order_by(
@@ -687,7 +828,9 @@ def shop():
 # PRODUCT DETAILS
 # ============================================================
 
-@app.route("/product/<int:perfume_id>")
+@app.route(
+    "/product/<int:perfume_id>"
+)
 def product(perfume_id):
 
     perfume = db.get_or_404(
@@ -759,11 +902,15 @@ def add_to_cart(perfume_id):
             )
         )
 
-    except ValueError:
+    except (
+        ValueError,
+        TypeError
+    ):
 
         quantity = 1
 
     if quantity < 1:
+
         quantity = 1
 
     cart = get_cart()
@@ -837,13 +984,16 @@ def update_cart():
 
     cart = get_cart()
 
-    for perfume_id in list(cart.keys()):
+    for perfume_id in list(
+        cart.keys()
+    ):
 
         field_name = (
             f"quantity_{perfume_id}"
         )
 
         if field_name not in request.form:
+
             continue
 
         try:
@@ -852,7 +1002,10 @@ def update_cart():
                 request.form[field_name]
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             quantity = 1
 
@@ -862,7 +1015,12 @@ def update_cart():
         )
 
         if not perfume:
-            cart.pop(perfume_id, None)
+
+            cart.pop(
+                perfume_id,
+                None
+            )
+
             continue
 
         if quantity <= 0:
@@ -884,7 +1042,16 @@ def update_cart():
                     "warning"
                 )
 
-            cart[perfume_id] = quantity
+            if quantity <= 0:
+
+                cart.pop(
+                    perfume_id,
+                    None
+                )
+
+            else:
+
+                cart[perfume_id] = quantity
 
     save_cart(cart)
 
@@ -1092,11 +1259,15 @@ def checkout():
                 )
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             delivery_fee = 0
 
         if delivery_fee < 0:
+
             delivery_fee = 0
 
         total = (
@@ -1114,7 +1285,9 @@ def checkout():
                 "%Y%m%d"
             )
             + "-"
-            + uuid.uuid4().hex[:6].upper()
+            + uuid.uuid4()
+            .hex[:6]
+            .upper()
         )
 
         # ----------------------------------------
@@ -1138,7 +1311,9 @@ def checkout():
             notes=notes
         )
 
-        db.session.add(order)
+        db.session.add(
+            order
+        )
 
         # ----------------------------------------
         # CREATE ORDER ITEMS
@@ -1163,8 +1338,6 @@ def checkout():
                 order_item
             )
 
-            # Reduce stock
-
             perfume.stock -= quantity
 
         # ----------------------------------------
@@ -1175,9 +1348,14 @@ def checkout():
 
             db.session.commit()
 
-        except Exception:
+        except Exception as error:
 
             db.session.rollback()
+
+            app.logger.exception(
+                "Error creating order: %s",
+                error
+            )
 
             flash(
                 "There was a problem creating "
@@ -1236,7 +1414,9 @@ def order_success(order_number):
 )
 def admin_login():
 
-    if session.get("admin_logged_in"):
+    if session.get(
+        "admin_logged_in"
+    ):
 
         return redirect(
             url_for("admin_dashboard")
@@ -1258,13 +1438,48 @@ def admin_login():
             username=username
         ).first()
 
-        if (
-            admin
-            and admin.password == password
-        ):
+        valid_password = False
+
+        if admin:
+
+            try:
+
+                # New hashed passwords
+                valid_password = check_password_hash(
+                    admin.password,
+                    password
+                )
+
+            except (
+                ValueError,
+                TypeError
+            ):
+
+                valid_password = False
+
+            # Compatibility with an old plaintext
+            # password stored in the database.
+            if not valid_password:
+
+                if admin.password == password:
+
+                    valid_password = True
+
+                    # Upgrade it to a secure hash.
+                    admin.password = (
+                        generate_password_hash(
+                            password
+                        )
+                    )
+
+                    db.session.commit()
+
+        if valid_password:
 
             session["admin_logged_in"] = True
+
             session["admin_id"] = admin.id
+
             session["admin_username"] = (
                 admin.username
             )
@@ -1292,7 +1507,9 @@ def admin_login():
 # ADMIN LOGOUT
 # ============================================================
 
-@app.route("/admin/logout")
+@app.route(
+    "/admin/logout"
+)
 def admin_logout():
 
     session.pop(
@@ -1329,31 +1546,43 @@ def admin_logout():
 @admin_required
 def admin_dashboard():
 
-    perfume_count = Perfume.query.count()
+    perfume_count = (
+        Perfume.query.count()
+    )
 
     active_perfume_count = (
         Perfume.query
-        .filter_by(active=True)
+        .filter_by(
+            active=True
+        )
         .count()
     )
 
-    order_count = Order.query.count()
+    order_count = (
+        Order.query.count()
+    )
 
     pending_orders = (
         Order.query
-        .filter_by(status="Pending")
+        .filter_by(
+            status="Pending"
+        )
         .count()
     )
 
     delivered_orders = (
         Order.query
-        .filter_by(status="Delivered")
+        .filter_by(
+            status="Delivered"
+        )
         .count()
     )
 
     total_sales = (
         db.session.query(
-            db.func.sum(Order.total)
+            db.func.sum(
+                Order.total
+            )
         )
         .filter(
             Order.status != "Cancelled"
@@ -1375,7 +1604,7 @@ def admin_dashboard():
         Perfume.query
         .filter(
             Perfume.stock <= 5,
-            Perfume.active == True
+            Perfume.active.is_(True)
         )
         .order_by(
             Perfume.stock.asc()
@@ -1400,7 +1629,9 @@ def admin_dashboard():
 # ADMIN PRODUCTS
 # ============================================================
 
-@app.route("/admin/products")
+@app.route(
+    "/admin/products"
+)
 @admin_required
 def admin_products():
 
@@ -1465,14 +1696,19 @@ def admin_add_product():
                 )
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             price = 0
 
-        discount_price_raw = request.form.get(
-            "discount_price",
-            ""
-        ).strip()
+        discount_price_raw = (
+            request.form.get(
+                "discount_price",
+                ""
+            ).strip()
+        )
 
         if discount_price_raw:
 
@@ -1482,7 +1718,10 @@ def admin_add_product():
                     discount_price_raw
                 )
 
-            except ValueError:
+            except (
+                ValueError,
+                TypeError
+            ):
 
                 discount_price = None
 
@@ -1499,7 +1738,10 @@ def admin_add_product():
                 )
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             stock = 0
 
@@ -1537,6 +1779,12 @@ def admin_add_product():
                 "admin/add_product.html"
             )
 
+        if discount_price is not None:
+
+            if discount_price < 0:
+
+                discount_price = None
+
         if stock < 0:
 
             stock = 0
@@ -1563,11 +1811,38 @@ def admin_add_product():
             active=active
         )
 
-        db.session.add(
-            perfume
-        )
+        try:
 
-        db.session.commit()
+            db.session.add(
+                perfume
+            )
+
+            db.session.commit()
+
+        except Exception as error:
+
+            db.session.rollback()
+
+            app.logger.exception(
+                "Error adding product: %s",
+                error
+            )
+
+            if image:
+
+                delete_image(
+                    image
+                )
+
+            flash(
+                "There was a problem adding "
+                "the product.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/add_product.html"
+            )
 
         flash(
             f"{name} added successfully.",
@@ -1635,14 +1910,19 @@ def admin_edit_product(perfume_id):
                 )
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             perfume.price = 0
 
-        discount_price_raw = request.form.get(
-            "discount_price",
-            ""
-        ).strip()
+        discount_price_raw = (
+            request.form.get(
+                "discount_price",
+                ""
+            ).strip()
+        )
 
         if discount_price_raw:
 
@@ -1652,7 +1932,10 @@ def admin_edit_product(perfume_id):
                     discount_price_raw
                 )
 
-            except ValueError:
+            except (
+                ValueError,
+                TypeError
+            ):
 
                 perfume.discount_price = None
 
@@ -1669,7 +1952,18 @@ def admin_edit_product(perfume_id):
                 )
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
+
+            perfume.stock = 0
+
+        if perfume.price < 0:
+
+            perfume.price = 0
+
+        if perfume.stock < 0:
 
             perfume.stock = 0
 
@@ -1689,7 +1983,10 @@ def admin_edit_product(perfume_id):
             "image"
         )
 
-        if image_file and image_file.filename:
+        if (
+            image_file
+            and image_file.filename
+        ):
 
             new_image = save_image(
                 image_file
@@ -1697,13 +1994,39 @@ def admin_edit_product(perfume_id):
 
             if new_image:
 
-                delete_image(
-                    perfume.image
-                )
+                old_image = perfume.image
 
                 perfume.image = new_image
 
-        db.session.commit()
+                if old_image:
+
+                    delete_image(
+                        old_image
+                    )
+
+        try:
+
+            db.session.commit()
+
+        except Exception as error:
+
+            db.session.rollback()
+
+            app.logger.exception(
+                "Error editing product: %s",
+                error
+            )
+
+            flash(
+                "There was a problem updating "
+                "the product.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/edit_product.html",
+                perfume=perfume
+            )
 
         flash(
             f"{perfume.name} updated successfully.",
@@ -1736,11 +2059,6 @@ def admin_delete_product(perfume_id):
         perfume_id
     )
 
-    # Do not delete a product that already
-    # appears in an order.
-    #
-    # Instead, deactivate it.
-
     existing_orders = (
         OrderItem.query
         .filter_by(
@@ -1753,7 +2071,22 @@ def admin_delete_product(perfume_id):
 
         perfume.active = False
 
-        db.session.commit()
+        try:
+
+            db.session.commit()
+
+        except Exception:
+
+            db.session.rollback()
+
+            flash(
+                "Unable to deactivate the product.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("admin_products")
+            )
 
         flash(
             "This perfume has previous orders, "
@@ -1769,11 +2102,32 @@ def admin_delete_product(perfume_id):
         perfume.image
     )
 
-    db.session.delete(
-        perfume
-    )
+    try:
 
-    db.session.commit()
+        db.session.delete(
+            perfume
+        )
+
+        db.session.commit()
+
+    except Exception as error:
+
+        db.session.rollback()
+
+        app.logger.exception(
+            "Error deleting product: %s",
+            error
+        )
+
+        flash(
+            "There was a problem deleting "
+            "the product.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_products")
+        )
 
     flash(
         "Perfume deleted successfully.",
@@ -1789,7 +2143,9 @@ def admin_delete_product(perfume_id):
 # ADMIN ORDERS
 # ============================================================
 
-@app.route("/admin/orders")
+@app.route(
+    "/admin/orders"
+)
 @admin_required
 def admin_orders():
 
@@ -1873,9 +2229,7 @@ def admin_update_order_status(order_id):
         )
 
         return redirect(
-            url_for(
-                "admin_orders"
-            )
+            url_for("admin_orders")
         )
 
     # ----------------------------------------
@@ -1901,7 +2255,7 @@ def admin_update_order_status(order_id):
                 )
 
     # ----------------------------------------
-    # PREVENT DOUBLE STOCK RETURN
+    # HANDLE REOPENING CANCELLED ORDER
     # ----------------------------------------
 
     if (
@@ -1933,9 +2287,36 @@ def admin_update_order_status(order_id):
                         "warning"
                     )
 
+                    return redirect(
+                        url_for(
+                            "admin_orders"
+                        )
+                    )
+
     order.status = new_status
 
-    db.session.commit()
+    try:
+
+        db.session.commit()
+
+    except Exception as error:
+
+        db.session.rollback()
+
+        app.logger.exception(
+            "Error updating order status: %s",
+            error
+        )
+
+        flash(
+            "There was a problem updating "
+            "the order.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("admin_orders")
+        )
 
     flash(
         f"Order {order.order_number} "
@@ -1944,9 +2325,7 @@ def admin_update_order_status(order_id):
     )
 
     return redirect(
-        url_for(
-            "admin_orders"
-        )
+        url_for("admin_orders")
     )
 
 
@@ -1958,47 +2337,79 @@ def initialize_database():
 
     with app.app_context():
 
-        db.create_all()
+        try:
 
-        # ----------------------------------------
-        # CREATE DEFAULT ADMIN
-        # ----------------------------------------
+            db.create_all()
 
-        admin = Admin.query.filter_by(
-            username="admin"
-        ).first()
+            # ----------------------------------------
+            # CREATE DEFAULT ADMIN
+            # ----------------------------------------
 
-        if not admin:
+            admin = Admin.query.filter_by(
+                username="admin"
+            ).first()
 
-            admin = Admin(
-                username="admin",
-                password="Manchi001"
+            if not admin:
+
+                default_password = os.getenv(
+                    "ADMIN_PASSWORD",
+                    "Manchi001"
+                )
+
+                admin = Admin(
+                    username="admin",
+                    password=generate_password_hash(
+                        default_password
+                    )
+                )
+
+                db.session.add(
+                    admin
+                )
+
+                db.session.commit()
+
+                print(
+                    "========================================"
+                )
+
+                print(
+                    " DEFAULT ADMIN CREATED"
+                )
+
+                print(
+                    " Username: admin"
+                )
+
+                print(
+                    " Password: "
+                    + default_password
+                )
+
+                print(
+                    "========================================"
+                )
+
+        except Exception as error:
+
+            db.session.rollback()
+
+            app.logger.exception(
+                "Database initialization failed: %s",
+                error
             )
 
-            db.session.add(
-                admin
-            )
+            # Do not hide the actual database problem
+            # during deployment.
+            raise
 
-            db.session.commit()
 
-            print(
-                "========================================"
-            )
-            print(
-                " DEFAULT ADMIN CREATED"
-            )
-            print(
-                " Username: admin"
-            )
-            print(
-                " Password: Manchi001"
-            )
-            print(
-                "========================================"
-            )
-
+# ============================================================
+# INITIALIZE DATABASE
+# ============================================================
 
 with app.app_context():
+
     initialize_database()
 
 
@@ -2020,6 +2431,11 @@ def internal_server_error(error):
 
     db.session.rollback()
 
+    app.logger.exception(
+        "Internal server error: %s",
+        error
+    )
+
     return render_template(
         "base.html",
         error_message="Something went wrong."
@@ -2035,25 +2451,54 @@ if __name__ == "__main__":
     initialize_database()
 
     print("")
-    print("========================================")
-    print("       PERFUME STORE")
-    print("========================================")
+    print(
+        "========================================"
+    )
+    print(
+        "           PERFUME STORE"
+    )
+    print(
+        "========================================"
+    )
     print("")
-    print("Customer website:")
-    print("http://127.0.0.1:5000/")
+    print(
+        "Customer website:"
+    )
+    print(
+        "http://127.0.0.1:5000/"
+    )
     print("")
-    print("Admin login:")
-    print("http://127.0.0.1:5000/admin/login")
+    print(
+        "Admin login:"
+    )
+    print(
+        "http://127.0.0.1:5000/admin/login"
+    )
     print("")
-    print("Default admin:")
-    print("Username: admin")
-    print("Password: admin123")
+    print(
+        "Default admin username:"
+    )
+    print(
+        "admin"
+    )
     print("")
-    print("========================================")
+    print(
+        "Set ADMIN_PASSWORD in your environment "
+        "to choose the admin password."
+    )
+    print("")
+    print(
+        "========================================"
+    )
     print("")
 
     app.run(
         host="0.0.0.0",
-        port=5000,
-        debug=True
+        port=int(
+            os.getenv(
+                "PORT",
+                5000
+            )
+        ),
+        debug=False
     )
